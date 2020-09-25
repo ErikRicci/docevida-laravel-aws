@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,7 +54,41 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
+        //DELETE
+        //Storage::disk('s3')->delete('product/', $path)
         //
+        //Request para o arquivo
+        $filecontent = $request->file('thumbnail_produto');
+
+        $data = $request->except(
+            ['_token',
+            'thumbnail_produto',
+            ]);
+
+        //Pega o valor que o usuário colocou no campo "nome_produto"
+        $thumbname = strtolower($request->nome_produto);
+
+        //Montagem do nome da imagem
+        $imageFileName = $thumbname . '.' . $filecontent->getClientOriginalExtension();
+
+        //Instanciamento do Storage AWS
+        $s3 = Storage::disk('s3');
+
+        //Montagem do caminho da imagem
+        $filePath = '/product/' . $imageFileName;
+        $filePath2 = 'product/' . $imageFileName;
+        $data['thumbnail_produto'] = strtolower(strval($filePath2));
+
+        if($s3->exists($filePath))
+            return 'Um arquivo com este nome já existe!';
+        //Se não houver uma imagem com o mesmo nomem, POSTE!
+        else{
+            //Colocando dados
+            Product::create($data);
+            //Colocando imagem
+            $s3->put($filePath, file_get_contents($filecontent), 'public');
+        }
+
     }
 
     /**

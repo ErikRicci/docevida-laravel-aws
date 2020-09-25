@@ -15,13 +15,16 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
-    return redirect('loja');
+    return view('welcome');
 });
 
-Route::get('loja', 'App\Http\Controllers\UsersController@index');
+Route::get('loja', 'App\Http\Controllers\UsersController@index')->name('loja');
 
-Route::get('loja/create', 'App\Http\Controllers\UsersController@create')->name('create');
+Route::group(['prefix'=>'admin'], function(){
+    Route::get('create', 'App\Http\Controllers\UsersController@create')->name('create');
+    Route::post('create', 'App\Http\Controllers\UsersController@store')->name('store')->middleware('auth');
+});
 
-Route::post('loja/create', 'App\Http\Controllers\UsersController@store')->name('store');
+
 
 Route::post('whatsapp', 'App\Http\Controllers\UsersController@whatsapp')->name('whatsapp');
